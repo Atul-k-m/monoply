@@ -81,10 +81,11 @@ h3,
 }
 
 .brand-subtitle {
-    font-family: 'Love Malia', sans-serif;
-    font-size: clamp(1rem, 2.5vw, 1.4rem);
-    color: var(--pink);
-    margin-top: 0.2rem;
+    font-family: 'Glonto', sans-serif;
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    letter-spacing: 5px;
+    color: var(--black);
+    margin-top: -0.5rem;
 }
 
 /* ---------- Screens ---------- */
