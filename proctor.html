@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmpireX — Proctor Panel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
+
+        :root {
+            --navy: #0d1b2a;
+            --navy-mid: #1b2d45;
+            --red: #e63946;
+            --gold: #d4a843;
+            --cream: #fdf6e3;
+            --white: #fff;
+            --black: #000;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--navy);
+            color: var(--cream);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: var(--gold);
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--red);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Timer Controls */
+        .timer-controls {
+            background: var(--navy-mid);
+            border: 2px solid var(--gold);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .timer-controls label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+
+        .timer-display {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--red);
+            font-variant-numeric: tabular-nums;
+            min-width: 80px;
+        }
+
+        .timer-input {
+            width: 70px;
+            padding: 0.4rem;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            background: var(--cream);
+            color: var(--navy);
+            border: 2px solid var(--black);
+            text-align: center;
+        }
+
+        .tbtn {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 0.5rem 1.2rem;
+            border: 2px solid var(--gold);
+            cursor: pointer;
+            background: var(--navy);
+            color: var(--cream);
+            transition: all 0.15s;
+        }
+
+        .tbtn:hover {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        .tbtn--red {
+            border-color: var(--red);
+        }
+
+        .tbtn--red:hover {
+            background: var(--red);
+            color: var(--white);
+        }
+
+        /* Round Control */
+        .round-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--gold);
+            color: var(--navy);
+            padding: 0.8rem 1.2rem;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .round-bar button {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.4rem 1rem;
+            background: var(--navy);
+            color: var(--cream);
+            border: 2px solid var(--navy);
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .round-bar button:hover {
+            background: var(--red);
+            border-color: var(--red);
+            color: var(--white);
+        }
+
+        /* Groups */
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .group-box {
+            background: var(--navy-mid);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .group-box-header {
+            padding: 0.6rem;
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-align: center;
+            color: var(--white);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .team-entry {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.8rem;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .team-entry:last-child {
+            border-bottom: none;
+        }
+
+        .team-dot {
+            width: 10px;
+            height: 10px;
+            border: 1px solid var(--black);
+            flex-shrink: 0;
+        }
+
+        .team-label {
+            flex: 1;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .team-score-input {
+            width: 70px;
+            padding: 0.4rem;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            background: var(--cream);
+            color: var(--navy);
+            border: 2px solid var(--black);
+            text-align: center;
+        }
+
+        .team-score-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(212, 168, 67, 0.3);
+        }
+
+        /* Publish */
+        .publish-btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            background: var(--red);
+            color: var(--white);
+            border: 3px solid var(--gold);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .publish-btn:hover {
+            box-shadow: 0 0 20px rgba(230, 57, 70, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .publish-status {
+            text-align: center;
+            padding: 0.8rem;
+            font-weight: 700;
+            color: #06d6a0;
+            letter-spacing: 2px;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .timer-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>EMPIREX</h1>
+    <p class="subtitle">Proctor Control Panel</p>
+
+    <!-- Timer Controls -->
+    <div class="timer-controls">
+        <label>TIMER</label>
+        <span class="timer-display" id="timer-display">05:00</span>
+        <input type="number" class="timer-input" id="timer-minutes" value="5" min="1" max="60" placeholder="min">
+        <span style="font-size:0.8rem; color:var(--cream);">min</span>
+        <button class="tbtn" id="btn-timer-set">SET</button>
+        <button class="tbtn" id="btn-timer-start" style="border-color:#06d6a0;">▶ START</button>
+        <button class="tbtn" id="btn-timer-pause">⏸ PAUSE</button>
+        <button class="tbtn tbtn--red" id="btn-timer-reset">↺ RESET</button>
+    </div>
+
+    <!-- Round Bar -->
+    <div class="round-bar">
+        <span id="round-label">ROUND 1</span>
+        <div>
+            <button id="btn-prev-round">◀ PREV</button>
+            <button id="btn-next-round">NEXT ▶</button>
+        </div>
+    </div>
+
+    <!-- Score Entry Groups -->
+    <div class="groups-grid" id="groups-grid"></div>
+
+    <!-- Publish -->
+    <button class="publish-btn" id="btn-publish">PUBLISH SCORES</button>
+    <p class="publish-status" id="publish-status">✓ SCORES PUBLISHED</p>
+
+    <script>
+        const STORAGE_KEY = 'empirex_data';
+        const TIMER_KEY = 'empirex_timer';
+        const GROUP_COLORS = ['#8B4513', '#5bc0eb', '#e84393', '#f77f00', '#d62828'];
+        const GROUP_NAMES = ['Group A', 'Group B', 'Group C', 'Group D', 'Group E'];
+
+        let currentRound = 1;
+        let teams = [];
+        let timerSeconds = 300;
+        let timerRunning = false;
+        let timerInterval = null;
+
+        /* ── Load teams from main app's localStorage ── */
+        function loadTeams() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (data && data.teams) {
+                        teams = data.teams;
+                        if (data.currentRound) currentRound = data.currentRound;
+                        return;
+                    }
+                }
+            } catch (e) { }
+
+            // Fallback: generate default 20 teams
+            const colors = ['#8B4513', '#5bc0eb', '#e84393', '#f77f00', '#d62828', '#f4d35e', '#06d6a0', '#1d3a8a', '#00ced1', '#b5179e'];
+            teams = [];
+            for (let i = 1; i <= 20; i++) {
+                teams.push({ id: i, name: `Team ${i}`, color: colors[(i - 1) % colors.length], group: Math.floor((i - 1) / 4), scores: [], total: 0 });
+            }
+        }
+
+        function renderGroups() {
+            const grid = document.getElementById('groups-grid');
+            grid.innerHTML = '';
+
+            for (let g = 0; g < 5; g++) {
+                const groupTeams = teams.filter(t => t.group === g);
+                const box = document.createElement('div');
+                box.className = 'group-box';
+                box.innerHTML = `
+          <div class="group-box-header" style="background:${GROUP_COLORS[g]}">${GROUP_NAMES[g]}</div>
+          ${groupTeams.map(t => `
+            <div class="team-entry">
+              <span class="team-dot" style="background:${t.color}"></span>
+              <span class="team-label">${t.name}</span>
+              <input type="number" class="team-score-input" id="input-${t.id}" value="${t.scores[currentRound - 1] ?? ''}" placeholder="—">
+            </div>
+          `).join('')}
+        `;
+                grid.appendChild(box);
+            }
+        }
+
+        function publishScores() {
+            // Read inputs
+            teams.forEach(t => {
+                const input = document.getElementById(`input-${t.id}`);
+                if (input && input.value !== '') {
+                    t.scores[currentRound - 1] = parseInt(input.value) || 0;
+                }
+            });
+
+            // Recalculate totals
+            teams.forEach(t => {
+                t.total = t.scores.reduce((a, b) => a + b, 0);
+            });
+
+            // Write to localStorage
+            const data = {
+                teams: teams,
+                currentRound: currentRound,
+                groupNames: GROUP_NAMES,
+                groupColors: GROUP_COLORS
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+            // Show status
+            const status = document.getElementById('publish-status');
+            status.style.display = 'block';
+            setTimeout(() => { status.style.display = 'none'; }, 2000);
+        }
+
+        /* ── Round Nav ── */
+        function updateRoundLabel() {
+            document.getElementById('round-label').textContent = `ROUND ${currentRound}`;
+        }
+
+        function nextRound() {
+            publishScores(); // save current round first
+            currentRound++;
+            updateRoundLabel();
+            renderGroups();
+            // Update storage round
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const data = JSON.parse(raw);
+                data.currentRound = currentRound;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+        }
+
+        function prevRound() {
+            if (currentRound <= 1) return;
+            publishScores();
+            currentRound--;
+            updateRoundLabel();
+            renderGroups();
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const data = JSON.parse(raw);
+                data.currentRound = currentRound;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+        }
+
+        /* ── Timer ── */
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer-display').textContent = formatTime(timerSeconds);
+        }
+
+        function writeTimerToStorage() {
+            localStorage.setItem(TIMER_KEY, JSON.stringify({ seconds: timerSeconds, running: timerRunning }));
+        }
+
+        function setTimer() {
+            const mins = parseInt(document.getElementById('timer-minutes').value) || 5;
+            timerSeconds = mins * 60;
+            timerRunning = false;
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            writeTimerToStorage();
+        }
+
+        function startTimer() {
+            if (timerRunning) return;
+            timerRunning = true;
+            writeTimerToStorage();
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    writeTimerToStorage();
+                } else {
+                    clearInterval(timerInterval);
+                    timerRunning = false;
+                    writeTimerToStorage();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+            writeTimerToStorage();
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            const mins = parseInt(document.getElementById('timer-minutes').value) || 5;
+            timerSeconds = mins * 60;
+            updateTimerDisplay();
+            writeTimerToStorage();
+        }
+
+        /* ── Init ── */
+        function init() {
+            loadTeams();
+            updateRoundLabel();
+            renderGroups();
+            updateTimerDisplay();
+            writeTimerToStorage();
+
+            document.getElementById('btn-publish').addEventListener('click', publishScores);
+            document.getElementById('btn-next-round').addEventListener('click', nextRound);
+            document.getElementById('btn-prev-round').addEventListener('click', prevRound);
+            document.getElementById('btn-timer-set').addEventListener('click', setTimer);
+            document.getElementById('btn-timer-start').addEventListener('click', startTimer);
+            document.getElementById('btn-timer-pause').addEventListener('click', pauseTimer);
+            document.getElementById('btn-timer-reset').addEventListener('click', resetTimer);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
