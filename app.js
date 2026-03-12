@@ -54,6 +54,18 @@
     function initFirebase() {
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
+
+        // Add real-time connection logging
+        db.ref('.info/connected').on('value', (snap) => {
+            const statusEl = $('#room-status');
+            if (snap.val() === true) {
+                if (statusEl) statusEl.textContent = 'FIREBASE CONNECTED';
+            } else {
+                if (statusEl && !statusEl.textContent.includes('ERROR')) {
+                    statusEl.textContent = 'CONNECTING TO FIREBASE...';
+                }
+            }
+        });
     }
 
     function saveTeamsToFirebase() {
@@ -89,15 +101,26 @@
 
     /* ─── Room Logic ─── */
     function createRoom() {
+        $('#room-status').textContent = 'CREATING ROOM... (CHECKING FIREBASE)';
         buildTeams();
         roomId = generateRoomCode();
+
+        // Set a timeout in case Firebase is hanging
+        const timeout = setTimeout(() => {
+            $('#room-status').textContent = 'FIREBASE HUNG: CHECK DB URL OR RULES';
+        }, 5000);
+
         roomRef().set({ created: Date.now() }).then(() => {
+            clearTimeout(timeout);
             displayRoomCode();
             showScreen('screen-1');
             renderCards();
             $('#btn-shuffle').addEventListener('click', doShuffle);
         }).catch(err => {
-            $('#room-status').textContent = 'FAILED TO CREATE ROOM';
+            clearTimeout(timeout);
+            console.error('Firebase Error:', err);
+            $('#room-status').textContent = 'ERROR: CHECK CONSOLE (F12)';
+            alert("Failed to create room. If you just created the project, make sure Realtime Database is enabled in test mode in the Firebase Console.");
         });
     }
 
