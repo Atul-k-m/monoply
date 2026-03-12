@@ -5,51 +5,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EmpireX — E-CELL BMSIT&M</title>
-  <meta name="description" content="EmpireX — the ultimate Monopoly-themed team competition event by E-CELL BMSIT&M.">
+  <meta name="description" content="EmpireX — Monopoly-themed team competition by E-CELL BMSIT&M.">
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- ── Brand Header ── -->
   <header class="brand-header">
     <h1 class="brand-title">EMPIREX</h1>
-    <p class="brand-subtitle">By E-CELL BMSIT&M</p>
+    <p class="brand-subtitle">E-CELL BMSIT&M</p>
   </header>
 
-  <!-- ══════════ SCREEN 1 : Team Cards ══════════ -->
+  <!-- ══ SCREEN 1 : Team Cards ══ -->
   <section id="screen-1" class="screen active">
     <div class="cards-grid" id="cards-grid"></div>
-    <button class="btn btn-glow" id="btn-shuffle" style="margin-top:2rem;">START SHUFFLE</button>
+    <button class="btn btn--pink" id="btn-shuffle" style="margin-top:2rem;">START SHUFFLE</button>
   </section>
 
-  <!-- ══════════ SCREEN 2 : Groups ══════════ -->
+  <!-- ══ SCREEN 2 : Brackets (Live) ══ -->
   <section id="screen-2" class="screen">
-    <div class="groups-row" id="groups-row"></div>
-    <button class="btn btn--gold" id="btn-begin-round" style="margin-top:2rem; display:none;">BEGIN ROUND 1 ➔</button>
+    <h2 class="round-label" id="round-label">ROUND 1</h2>
+    <div class="brackets-row" id="brackets-row"></div>
   </section>
-
-  <!-- ══════════ SCREEN 3 : Live Round ══════════ -->
-  <section id="screen-3" class="screen">
-    <div class="timer-bar">
-      <span class="timer-round" id="timer-round">ROUND 1</span>
-      <span class="timer-clock" id="timer-clock">05:00</span>
-    </div>
-
-    <div class="live-groups" id="live-groups"></div>
-
-    <div class="leaderboard-strip" id="lb-strip">
-      <div class="lb-strip-header">LEADERBOARD</div>
-      <div class="lb-strip-body" id="lb-strip-body"></div>
-    </div>
-
-    <div class="history-section">
-      <button class="history-toggle" id="history-toggle">▼ ROUND HISTORY ▼</button>
-      <div class="history-body" id="history-body"></div>
-    </div>
-  </section>
-
-  <!-- Shuffle overlay (created dynamically by JS) -->
 
   <script src="app.js"></script>
 </body>
