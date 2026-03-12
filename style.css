@@ -100,6 +100,71 @@ h3,
     display: flex;
 }
 
+/* ---------- Room Selection ---------- */
+.room-box {
+    background: var(--white);
+    border: var(--border-thick);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.room-heading {
+    font-family: 'Glonto', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 4px;
+    text-align: center;
+}
+
+.room-input {
+    width: 100%;
+    padding: 0.8rem;
+    font-family: 'Glonto', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 6px;
+    text-align: center;
+    text-transform: uppercase;
+    border: var(--border);
+    background: var(--ghost);
+    color: var(--black);
+}
+
+.room-input:focus {
+    outline: none;
+    border-color: var(--teal);
+}
+
+.room-divider {
+    font-family: 'Glonto', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    color: rgba(0, 0, 0, 0.3);
+}
+
+.room-status {
+    font-family: 'Glonto', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    color: var(--pink);
+    min-height: 1.2em;
+}
+
+.room-code-display {
+    font-family: 'Glonto', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    color: var(--white);
+    background: var(--black);
+    border: var(--border);
+    padding: 0.4rem 1.2rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
 /* ---------- Buttons ---------- */
 .btn {
     font-family: 'Glonto', sans-serif;

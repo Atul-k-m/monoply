@@ -23,7 +23,7 @@
             --ghost: #f9f8f6;
             --teal: #55D6C2;
             --black: #111111;
-            --white: #ffffff;
+            --white: #fff;
         }
 
         *,
@@ -40,6 +40,9 @@
             color: var(--black);
             min-height: 100vh;
             padding: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             background-image:
                 linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
@@ -59,104 +62,109 @@
             font-size: 0.85rem;
             color: var(--pink);
             letter-spacing: 2px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        /* Timer */
-        .timer-ctrl {
-            background: var(--black);
-            border: 4px solid var(--black);
-            padding: 0.8rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.6rem;
-            margin-bottom: 1rem;
-        }
-
-        .timer-ctrl label {
-            font-family: 'Glonto', sans-serif;
-            color: var(--yellow);
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-        }
-
-        .timer-display {
-            font-family: 'Glonto', sans-serif;
-            font-size: 1.8rem;
-            color: var(--pink);
-            font-variant-numeric: tabular-nums;
-        }
-
-        .timer-input {
-            width: 55px;
-            padding: 0.4rem;
-            font-family: 'Glonto', sans-serif;
-            font-size: 1rem;
-            border: 3px solid var(--white);
+        /* Login */
+        .login-box {
             background: var(--white);
-            color: var(--black);
+            border: 4px solid var(--black);
+            padding: 2rem 1.5rem;
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .login-box.hidden {
+            display: none;
+        }
+
+        .login-heading {
+            font-family: 'Glonto', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 3px;
             text-align: center;
         }
 
-        .t-btn {
+        .login-input {
+            width: 100%;
+            padding: 0.7rem;
             font-family: 'Glonto', sans-serif;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            text-align: center;
             text-transform: uppercase;
-            padding: 0.45rem 0.8rem;
-            border: 3px solid var(--white);
-            background: transparent;
-            color: var(--white);
-            cursor: pointer;
+            border: 3px solid var(--black);
+            background: var(--ghost);
+            color: var(--black);
         }
 
-        .t-btn:active {
-            background: var(--teal);
-            color: var(--black);
+        .login-input:focus {
+            outline: none;
             border-color: var(--teal);
         }
 
-        /* Round */
-        .round-ctrl {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--yellow);
-            border: 4px solid var(--black);
-            padding: 0.6rem 1rem;
-            margin-bottom: 1rem;
+        .login-input[type="password"] {
+            text-transform: none;
         }
 
-        .round-label {
+        .login-btn {
             font-family: 'Glonto', sans-serif;
-            font-size: 1.2rem;
+            font-size: 1rem;
             letter-spacing: 3px;
-        }
-
-        .round-ctrl-btns {
-            display: flex;
-            gap: 0.4rem;
-        }
-
-        .r-btn {
-            font-family: 'Glonto', sans-serif;
-            font-size: 0.75rem;
-            padding: 0.4rem 0.8rem;
-            border: 3px solid var(--black);
-            background: var(--white);
+            text-transform: uppercase;
+            padding: 0.8rem;
+            border: 4px solid var(--black);
+            background: var(--teal);
             color: var(--black);
             cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .login-btn:active {
+            transform: scale(0.97);
+        }
+
+        .login-error {
+            font-family: 'Glonto', sans-serif;
+            font-size: 0.75rem;
             letter-spacing: 1px;
-            text-transform: uppercase;
+            color: var(--pink);
+            text-align: center;
+            min-height: 1em;
         }
 
-        .r-btn:active {
-            background: var(--black);
-            color: var(--white);
+        /* Panel content */
+        .panel {
+            display: none;
+            width: 100%;
+            max-width: 600px;
         }
 
-        /* Bracket */
+        .panel.active {
+            display: block;
+        }
+
+        .status-bar {
+            text-align: center;
+            padding: 0.5rem;
+            font-family: 'Glonto', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            border: 3px solid var(--black);
+        }
+
+        .status-bar.ok {
+            background: var(--teal);
+        }
+
+        .status-bar.err {
+            background: var(--pink);
+        }
+
         .bracket {
             background: var(--white);
             border: 4px solid var(--black);
@@ -241,7 +249,6 @@
             background: var(--white);
         }
 
-        /* Status toast */
         .toast {
             position: fixed;
             bottom: 1rem;
@@ -269,36 +276,105 @@
     <h1>EMPIREX</h1>
     <p class="sub">PROCTOR PANEL</p>
 
-    <!-- Brackets -->
-    <div id="brackets"></div>
+    <!-- Login -->
+    <div class="login-box" id="login-box">
+        <h2 class="login-heading">ROOM ACCESS</h2>
+        <input type="text" class="login-input" id="login-room" placeholder="ROOM CODE" maxlength="6" autocomplete="off">
+        <input type="password" class="login-input" id="login-pass" placeholder="PASSWORD" autocomplete="off">
+        <button class="login-btn" id="btn-login">ENTER</button>
+        <p class="login-error" id="login-error"></p>
+    </div>
 
-    <!-- Toast -->
+    <!-- Score Panel (hidden until login) -->
+    <div class="panel" id="panel">
+        <div class="status-bar" id="status-bar">CONNECTING...</div>
+        <div id="brackets"></div>
+    </div>
+
     <div class="toast" id="toast">✓ PUBLISHED</div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
     <script>
-        const SK = 'empirex_data';
         const BRACKET_COLORS = ['#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#f9f8f6'];
         const BRACKET_NAMES = ['Bracket A', 'Bracket B', 'Bracket C', 'Bracket D', 'Bracket E'];
+        const PASSWORD = 'e-cell';
 
         let teams = [];
+        let db = null;
+        let roomId = null;
 
-        function loadTeams() {
-            try {
-                const d = JSON.parse(localStorage.getItem(SK));
-                if (d && d.teams) { teams = d.teams; return; }
-            } catch (e) { }
-            const cols = ['#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2'];
-            teams = [];
-            for (let i = 1; i <= 20; i++) {
-                teams.push({ id: i, name: `Team ${i}`, color: cols[i - 1], group: Math.floor((i - 1) / 4), scores: [], total: 0 });
-            }
+        /* ── Firebase ── */
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+
+        /* ── Login ── */
+        document.getElementById('btn-login').addEventListener('click', attemptLogin);
+        document.getElementById('login-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptLogin(); });
+
+        function attemptLogin() {
+            const code = document.getElementById('login-room').value.trim().toUpperCase();
+            const pass = document.getElementById('login-pass').value;
+            const err = document.getElementById('login-error');
+
+            if (!code) { err.textContent = 'ENTER ROOM CODE'; return; }
+            if (pass !== PASSWORD) { err.textContent = 'WRONG PASSWORD'; return; }
+
+            // Check room exists in Firebase
+            db.ref(`empirex/rooms/${code}`).once('value', (snap) => {
+                if (!snap.exists()) {
+                    err.textContent = 'ROOM NOT FOUND';
+                    return;
+                }
+
+                roomId = code;
+                err.textContent = '';
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('panel').classList.add('active');
+
+                // Connection status
+                db.ref('.info/connected').on('value', (s) => {
+                    const bar = document.getElementById('status-bar');
+                    if (s.val()) {
+                        bar.textContent = `● CONNECTED — ROOM: ${roomId}`;
+                        bar.className = 'status-bar ok';
+                    } else {
+                        bar.textContent = '● OFFLINE';
+                        bar.className = 'status-bar err';
+                    }
+                });
+
+                loadTeams();
+            });
         }
 
+        /* ── Load teams from Firebase ── */
+        function loadTeams() {
+            db.ref(`empirex/rooms/${roomId}/teams`).once('value', (snap) => {
+                const data = snap.val();
+                if (data) {
+                    teams = Object.values(data).sort((a, b) => a.id - b.id);
+                } else {
+                    const cols = ['#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2'];
+                    teams = [];
+                    for (let i = 1; i <= 20; i++) {
+                        teams.push({ id: i, name: `Team ${i}`, color: cols[i - 1], group: Math.floor((i - 1) / 4), total: 0 });
+                    }
+                }
+                renderBrackets();
+            });
+        }
+
+        /* ── Render ── */
         function renderBrackets() {
             const container = document.getElementById('brackets');
             container.innerHTML = '';
             for (let g = 0; g < 5; g++) {
                 const gt = teams.filter(t => t.group === g);
+                if (gt.length === 0) continue;
                 const div = document.createElement('div');
                 div.className = 'bracket';
                 div.innerHTML = `
@@ -319,8 +395,7 @@
 
             document.querySelectorAll('.pub-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const g = parseInt(btn.dataset.group);
-                    publishBracket(g);
+                    publishBracket(parseInt(btn.dataset.group));
                     btn.classList.add('done');
                     btn.textContent = '✓ DONE';
                     setTimeout(() => { btn.classList.remove('done'); btn.textContent = 'PUBLISH'; }, 1500);
@@ -329,20 +404,18 @@
             });
         }
 
+        /* ── Publish to Firebase ── */
         function publishBracket(groupIdx) {
             const gt = teams.filter(t => t.group === groupIdx);
+            const updates = {};
             gt.forEach(t => {
                 const inp = document.getElementById(`inp-${t.id}`);
                 if (inp && inp.value !== '') {
                     t.total = parseInt(inp.value) || 0;
                 }
+                updates[`empirex/rooms/${roomId}/teams/team_${t.id}/total`] = t.total;
             });
-            writeStorage();
-        }
-
-        function writeStorage() {
-            const data = { teams, bracketNames: BRACKET_NAMES, bracketColors: BRACKET_COLORS };
-            localStorage.setItem(SK, JSON.stringify(data));
+            db.ref().update(updates);
         }
 
         function showToast() {
@@ -350,10 +423,6 @@
             t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 1500);
         }
-
-        // Init
-        loadTeams();
-        renderBrackets();
     </script>
 </body>
 

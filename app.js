@@ -1,4 +1,4 @@
-/* ===== EmpireX v3 — app.js ===== */
+/* ===== EmpireX v5 — app.js (Firebase + Rooms) ===== */
 
 (() => {
     'use strict';
@@ -9,22 +9,18 @@
         '#F5E960', '#55D6C2', '#F49097', '#DFB2F4', '#F5E960',
         '#55D6C2', '#F49097', '#DFB2F4', '#F5E960', '#55D6C2'
     ];
-    const BRACKET_COLORS = ['#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#F2F5FF'];
+    const BRACKET_COLORS = ['#F49097', '#DFB2F4', '#F5E960', '#55D6C2', '#f9f8f6'];
     const BRACKET_NAMES = ['Bracket A', 'Bracket B', 'Bracket C', 'Bracket D', 'Bracket E'];
-    const STORAGE_KEY = 'empirex_data';
 
     let teams = [];
-    let currentRound = 1;
+    let db = null;
+    let roomId = null;
 
-    for (let i = 1; i <= 20; i++) {
-        teams.push({
-            id: i,
-            name: `Team ${i}`,
-            color: TEAM_COLORS[i - 1],
-            group: -1,
-            scores: [],
-            total: 0
-        });
+    function buildTeams() {
+        teams = [];
+        for (let i = 1; i <= 20; i++) {
+            teams.push({ id: i, name: `Team ${i}`, color: TEAM_COLORS[i - 1], group: -1, total: 0 });
+        }
     }
 
     function $(s) { return document.querySelector(s); }
@@ -35,41 +31,125 @@
         $(`#${id}`).classList.add('active');
     }
 
-    function saveToStorage() {
-        const data = {
-            teams: teams.map(t => ({ id: t.id, name: t.name, color: t.color, group: t.group, scores: [...t.scores], total: t.total })),
-            currentRound,
-            bracketNames: BRACKET_NAMES,
-            bracketColors: BRACKET_COLORS
-        };
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { }
+    function roomRef() {
+        return db.ref(`empirex/rooms/${roomId}`);
     }
 
-    function loadFromStorage() {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return false;
-            const data = JSON.parse(raw);
-            if (data && data.teams) {
-                data.teams.forEach(saved => {
-                    const local = teams.find(t => t.id === saved.id);
-                    if (local) {
-                        local.group = saved.group !== undefined ? saved.group : local.group;
-                        local.scores = saved.scores || [];
-                        local.total = saved.total || 0;
+    function generateRoomCode() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+        return code;
+    }
+
+    function displayRoomCode() {
+        const text = `ROOM: ${roomId}`;
+        const el1 = $('#room-code-display');
+        const el2 = $('#room-code-display-2');
+        if (el1) el1.textContent = text;
+        if (el2) el2.textContent = text;
+    }
+
+    /* ─── Firebase ─── */
+    function initFirebase() {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    }
+
+    function saveTeamsToFirebase() {
+        if (!db || !roomId) return;
+        const data = {};
+        teams.forEach(t => {
+            data[`team_${t.id}`] = { id: t.id, name: t.name, color: t.color, group: t.group, total: t.total };
+        });
+        roomRef().child('teams').set(data);
+    }
+
+    function listenForScoreUpdates() {
+        if (!db || !roomId) return;
+        roomRef().child('teams').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+            teams.forEach(t => {
+                const saved = data[`team_${t.id}`];
+                if (!saved) return;
+                const oldTotal = t.total;
+                t.total = saved.total || 0;
+                if (t.total !== oldTotal) {
+                    const el = document.getElementById(`score-${t.id}`);
+                    if (el) {
+                        el.textContent = t.total > 0 ? `$${t.total}` : '—';
+                        el.classList.add('flash');
+                        setTimeout(() => el.classList.remove('flash'), 500);
+                    }
+                }
+            });
+        });
+    }
+
+    /* ─── Room Logic ─── */
+    function createRoom() {
+        buildTeams();
+        roomId = generateRoomCode();
+        roomRef().set({ created: Date.now() }).then(() => {
+            displayRoomCode();
+            showScreen('screen-1');
+            renderCards();
+            $('#btn-shuffle').addEventListener('click', doShuffle);
+        }).catch(err => {
+            $('#room-status').textContent = 'FAILED TO CREATE ROOM';
+        });
+    }
+
+    function joinRoom() {
+        const code = $('#room-input').value.trim().toUpperCase();
+        if (!code) {
+            $('#room-status').textContent = 'ENTER A ROOM CODE';
+            return;
+        }
+        db.ref(`empirex/rooms/${code}`).once('value', (snapshot) => {
+            if (!snapshot.exists()) {
+                $('#room-status').textContent = 'ROOM NOT FOUND';
+                return;
+            }
+            roomId = code;
+            const roomData = snapshot.val();
+
+            // Restore teams
+            buildTeams();
+            if (roomData.teams) {
+                let hasGroups = false;
+                teams.forEach(t => {
+                    const saved = roomData.teams[`team_${t.id}`];
+                    if (saved) {
+                        t.group = saved.group !== undefined ? saved.group : t.group;
+                        t.total = saved.total || 0;
+                        if (t.group >= 0) hasGroups = true;
                     }
                 });
-                if (data.currentRound) currentRound = data.currentRound;
-                return true;
-            }
-        } catch (e) { }
-        return false;
-    }
 
-    function formatTime(secs) {
-        const m = Math.floor(secs / 60);
-        const s = secs % 60;
-        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                if (hasGroups) {
+                    displayRoomCode();
+                    showScreen('screen-2');
+                    renderBrackets();
+                    setTimeout(() => {
+                        $$('.bracket-team-row').forEach(el => el.style.visibility = 'visible');
+                        teams.forEach(t => {
+                            const el = document.getElementById(`score-${t.id}`);
+                            if (el) el.textContent = t.total > 0 ? `$${t.total}` : '—';
+                        });
+                    }, 50);
+                    listenForScoreUpdates();
+                    return;
+                }
+            }
+
+            // No groups yet — show cards
+            displayRoomCode();
+            showScreen('screen-1');
+            renderCards();
+            $('#btn-shuffle').addEventListener('click', doShuffle);
+        });
     }
 
     /* ─── Screen 1 ─── */
@@ -89,7 +169,6 @@
     async function doShuffle() {
         $('#btn-shuffle').style.display = 'none';
 
-        // Assign groups
         const slots = [];
         for (let g = 0; g < 5; g++) for (let s = 0; s < 4; s++) slots.push(g);
         for (let i = slots.length - 1; i > 0; i--) {
@@ -98,13 +177,11 @@
         }
         teams.forEach((t, idx) => { t.group = slots[idx]; });
 
-        // Snapshot card positions
         const cardEls = Array.from($$('.team-card'));
         const rects = cardEls.map(el => el.getBoundingClientRect());
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
 
-        // Create overlay with clones
         const overlay = document.createElement('div');
         overlay.className = 'shuffle-overlay';
         document.body.appendChild(overlay);
@@ -117,15 +194,9 @@
             clone.style.height = rects[i].height + 'px';
             overlay.appendChild(clone);
             return {
-                el: clone,
-                origX: rects[i].left,
-                origY: rects[i].top,
-                w: rects[i].width,
-                h: rects[i].height,
-                x: rects[i].left,
-                y: rects[i].top,
-                angle: 0,
-                scale: 1
+                el: clone, origX: rects[i].left, origY: rects[i].top,
+                w: rects[i].width, h: rects[i].height,
+                x: rects[i].left, y: rects[i].top, angle: 0, scale: 1
             };
         });
 
@@ -133,86 +204,76 @@
 
         function applyTransform(c) {
             c.el.style.transform = `translate(${c.x}px, ${c.y}px) rotate(${c.angle}deg) scale(${c.scale})`;
-            c.el.style.left = '0';
-            c.el.style.top = '0';
+            c.el.style.left = '0'; c.el.style.top = '0';
         }
 
-        // Phase 1: Scatter to center area with gentle spin (~1.2s)
+        // Phase 1: Scatter to center
         await animate(1200, (p, clones) => {
             clones.forEach((c, i) => {
-                const ease = p * p * (3 - 2 * p); // smoothstep
-                const targetX = cx - c.w / 2 + (Math.sin(i * 1.7) * 60);
-                const targetY = cy - c.h / 2 + (Math.cos(i * 1.3) * 40);
-                c.x = c.origX + (targetX - c.origX) * ease;
-                c.y = c.origY + (targetY - c.origY) * ease;
+                const ease = p * p * (3 - 2 * p);
+                c.x = c.origX + (cx - c.w / 2 + Math.sin(i * 1.7) * 60 - c.origX) * ease;
+                c.y = c.origY + (cy - c.h / 2 + Math.cos(i * 1.3) * 40 - c.origY) * ease;
                 c.angle = ease * 180 * (i % 2 === 0 ? 1 : -1);
                 c.scale = 1 - ease * 0.15;
                 applyTransform(c);
             });
         }, clones);
 
-        // Phase 2: Quick shuffle in center (~1s)
-        const shuffleStartPositions = clones.map(c => ({ x: c.x, y: c.y }));
+        // Phase 2: Jitter shuffle
+        const ss = clones.map(c => ({ x: c.x, y: c.y }));
         await animate(1000, (p, clones) => {
             clones.forEach((c, i) => {
                 const t = p * Math.PI * 4;
-                const jitter = Math.sin(t + i * 0.8) * (1 - p) * 80;
-                c.x = shuffleStartPositions[i].x + jitter;
-                c.y = shuffleStartPositions[i].y + Math.cos(t + i * 1.1) * (1 - p) * 50;
+                c.x = ss[i].x + Math.sin(t + i * 0.8) * (1 - p) * 80;
+                c.y = ss[i].y + Math.cos(t + i * 1.1) * (1 - p) * 50;
                 c.angle = Math.sin(t + i) * (1 - p) * 30;
                 c.scale = 0.85 + Math.sin(t * 2 + i) * 0.08;
                 applyTransform(c);
             });
         }, clones);
 
-        // Prepare brackets behind overlay
+        // Show brackets behind overlay
         showScreen('screen-2');
+        displayRoomCode();
         renderBrackets();
         await sleep(80);
 
-        // Get target positions
         const targetRects = {};
         teams.forEach(t => {
             const el = document.getElementById(`bkt-team-${t.id}`);
             if (el) targetRects[t.id] = el.getBoundingClientRect();
         });
 
-        // Phase 3: Fly to bracket positions (~0.8s)
-        const flyStarts = clones.map(c => ({ x: c.x, y: c.y, angle: c.angle, scale: c.scale }));
+        // Phase 3: Fly to brackets
+        const fs = clones.map(c => ({ x: c.x, y: c.y, angle: c.angle, scale: c.scale }));
         await animate(800, (p, clones) => {
-            const ease = 1 - Math.pow(1 - p, 3); // ease-out cubic
+            const ease = 1 - Math.pow(1 - p, 3);
             clones.forEach((c, i) => {
-                const team = teams[i];
-                const tgt = targetRects[team.id];
+                const tgt = targetRects[teams[i].id];
                 if (!tgt) return;
-                const s = flyStarts[i];
-                c.x = s.x + (tgt.left - s.x) * ease;
-                c.y = s.y + (tgt.top - s.y) * ease;
-                c.angle = s.angle * (1 - ease);
-                c.scale = s.scale + (1 - s.scale) * ease;
+                c.x = fs[i].x + (tgt.left - fs[i].x) * ease;
+                c.y = fs[i].y + (tgt.top - fs[i].y) * ease;
+                c.angle = fs[i].angle * (1 - ease);
+                c.scale = fs[i].scale + (1 - fs[i].scale) * ease;
                 c.el.style.width = (c.w + (tgt.width - c.w) * ease) + 'px';
                 c.el.style.height = (c.h + (tgt.height - c.h) * ease) + 'px';
                 applyTransform(c);
             });
         }, clones);
 
-        // Done — reveal bracket cards, remove overlay
         overlay.remove();
         $$('.bracket-team-row').forEach(el => el.style.visibility = 'visible');
-        saveToStorage();
-
-        // Start polling for proctor score updates
-        setInterval(pollStorage, 1000);
+        saveTeamsToFirebase();
+        listenForScoreUpdates();
     }
 
-    function animate(durationMs, updateFn, clones) {
+    function animate(ms, fn, clones) {
         return new Promise(resolve => {
-            const start = performance.now();
+            const s = performance.now();
             function frame(now) {
-                const p = Math.min((now - start) / durationMs, 1);
-                updateFn(p, clones);
-                if (p < 1) requestAnimationFrame(frame);
-                else resolve();
+                const p = Math.min((now - s) / ms, 1);
+                fn(p, clones);
+                p < 1 ? requestAnimationFrame(frame) : resolve();
             }
             requestAnimationFrame(frame);
         });
@@ -220,18 +281,18 @@
 
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-    /* ─── Screen 2 : Brackets ─── */
+    /* ─── Brackets ─── */
     function renderBrackets() {
-        const container = $('#brackets-row');
-        container.innerHTML = '';
+        const c = $('#brackets-row');
+        c.innerHTML = '';
         for (let g = 0; g < 5; g++) {
-            const groupTeams = teams.filter(t => t.group === g);
+            const gt = teams.filter(t => t.group === g);
             const panel = document.createElement('div');
             panel.className = 'bracket-panel';
             panel.innerHTML = `
         <div class="bracket-header" style="background:${BRACKET_COLORS[g]}">${BRACKET_NAMES[g]}</div>
         <div class="bracket-teams">
-          ${groupTeams.map(t => `
+          ${gt.map(t => `
             <div class="bracket-team-row" id="bkt-team-${t.id}" style="visibility:hidden;">
               <span class="bracket-team-name">
                 <span class="team-dot" style="background:${t.color}"></span>
@@ -242,68 +303,16 @@
           `).join('')}
         </div>
       `;
-            container.appendChild(panel);
+            c.appendChild(panel);
         }
-    }
-
-    /* ─── Poll localStorage for proctor updates ─── */
-    function pollStorage() {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return;
-            const data = JSON.parse(raw);
-            if (!data || !data.teams) return;
-
-            let changed = false;
-            data.teams.forEach(saved => {
-                const local = teams.find(t => t.id === saved.id);
-                if (!local) return;
-                if (JSON.stringify(local.scores) !== JSON.stringify(saved.scores) || local.total !== saved.total) {
-                    local.scores = saved.scores || [];
-                    local.total = saved.total || 0;
-                    changed = true;
-                }
-            });
-
-            if (data.currentRound && data.currentRound !== currentRound) {
-                currentRound = data.currentRound;
-                $('#round-label').textContent = `ROUND ${currentRound}`;
-                changed = true;
-            }
-
-            if (changed) {
-                teams.forEach(t => {
-                    const el = document.getElementById(`score-${t.id}`);
-                    if (!el) return;
-                    const val = t.total > 0 ? `$${t.total}` : '—';
-                    if (el.textContent !== val) {
-                        el.textContent = val;
-                        el.classList.add('flash');
-                        setTimeout(() => el.classList.remove('flash'), 500);
-                    }
-                });
-            }
-        } catch (e) { }
-    }
-
-    function syncTimer() {
-        try {
-            const raw = localStorage.getItem(TIMER_KEY);
-            if (!raw) return;
-            const timer = JSON.parse(raw);
-            const el = $('#timer-clock');
-            el.textContent = formatTime(timer.seconds ?? 300);
-            timer.running ? el.classList.remove('paused') : el.classList.add('paused');
-        } catch (e) { }
     }
 
     /* ─── Init ─── */
     function init() {
-        // Always start fresh — clear old state so shuffle always plays
-        localStorage.removeItem(STORAGE_KEY);
-
-        renderCards();
-        $('#btn-shuffle').addEventListener('click', doShuffle);
+        initFirebase();
+        $('#btn-create-room').addEventListener('click', createRoom);
+        $('#btn-join-room').addEventListener('click', joinRoom);
+        $('#room-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') joinRoom(); });
     }
 
     document.addEventListener('DOMContentLoaded', init);

@@ -16,18 +16,36 @@
     <p class="brand-subtitle">E-CELL BMSIT&M</p>
   </header>
 
+  <!-- ══ SCREEN 0 : Room Selection ══ -->
+  <section id="screen-0" class="screen active">
+    <div class="room-box">
+      <h2 class="room-heading">ENTER ROOM</h2>
+      <input type="text" class="room-input" id="room-input" placeholder="ROOM CODE" maxlength="6" autocomplete="off">
+      <button class="btn btn--teal" id="btn-join-room">JOIN ROOM</button>
+      <div class="room-divider">OR</div>
+      <button class="btn btn--pink" id="btn-create-room">CREATE NEW ROOM</button>
+      <p class="room-status" id="room-status"></p>
+    </div>
+  </section>
+
   <!-- ══ SCREEN 1 : Team Cards ══ -->
-  <section id="screen-1" class="screen active">
+  <section id="screen-1" class="screen">
+    <p class="room-code-display" id="room-code-display"></p>
     <div class="cards-grid" id="cards-grid"></div>
     <button class="btn btn--pink" id="btn-shuffle" style="margin-top:2rem;">START SHUFFLE</button>
   </section>
 
   <!-- ══ SCREEN 2 : Brackets (Live) ══ -->
   <section id="screen-2" class="screen">
+    <p class="room-code-display" id="room-code-display-2"></p>
     <h2 class="round-label" id="round-label">ROUND 1</h2>
     <div class="brackets-row" id="brackets-row"></div>
   </section>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
 </body>
 
